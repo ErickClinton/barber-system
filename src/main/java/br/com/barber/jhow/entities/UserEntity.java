@@ -2,7 +2,6 @@ package br.com.barber.jhow.entities;
 
 import jakarta.persistence.*;
 
-import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -27,7 +26,15 @@ public class UserEntity {
     @JoinColumn(name = "role_id", nullable = false)
     private RoleEntity role;
 
-    public UserEntity() {}
+    public UserEntity() {
+    }
+
+    public UserEntity(String email, String password, String name, RoleEntity role) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+    }
 
     public UUID getId() {
         return id;
@@ -59,5 +66,13 @@ public class UserEntity {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public RoleEntity getRole() {
+        return role;
+    }
+
+    public void setRole(RoleEntity role) {
+        this.role = role;
     }
 }
