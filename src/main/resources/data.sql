@@ -1,3 +1,8 @@
-INSERT INTO role (type) VALUES ('ADMIN');
-INSERT INTO role (type) VALUES ('USER');
-INSERT INTO role (type) VALUES ('MANAGER');
+INSERT INTO role (type) VALUES ('ADMIN')
+    ON CONFLICT (type) DO NOTHING;
+
+INSERT INTO role (type) VALUES ('USER')
+    ON CONFLICT (type) DO NOTHING;
+
+INSERT INTO role (type) VALUES ('MANAGER')
+    ON CONFLICT (type) DO NOTHING;
