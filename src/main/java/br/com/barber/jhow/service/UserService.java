@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -57,16 +58,23 @@ public class UserService {
         var now = Instant.now();
         var expiresIn = 300L;
 
+        var scope = user.getRole().getType();
+
         var claims = JwtClaimsSet.builder()
                 .issuer("server")
                 .subject(user.getEmail())
                 .expiresAt(now.plusSeconds(expiresIn))
                 .issuedAt(now)
+                .claim("scope", scope)
                 .build();
 
         var jwtValue = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 
         return new LoginResponse(jwtValue,expiresIn);
+    }
+
+    public List<UserEntity> getAllUsers() {
+        return this.userRepository.findAll();
     }
 
 }
