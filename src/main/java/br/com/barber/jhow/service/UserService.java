@@ -5,8 +5,10 @@ import br.com.barber.jhow.controller.dto.LoginResponse;
 import br.com.barber.jhow.controller.dto.SignRequest;
 import br.com.barber.jhow.entities.RoleEntity;
 import br.com.barber.jhow.entities.UserEntity;
+import br.com.barber.jhow.exceptions.user.UserAlreadyExistsException;
+import br.com.barber.jhow.exceptions.user.UserBadCredentialsException;
+import br.com.barber.jhow.exceptions.user.UserNotFoundException;
 import br.com.barber.jhow.repositories.UserRepository;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -33,7 +35,7 @@ public class UserService {
 
     public UserEntity createUser(SignRequest signRequest) {
         if (this.userRepository.findByEmail(signRequest.email()).isPresent())
-            throw new RuntimeException("User already exists");
+            throw new UserAlreadyExistsException("User with email " + signRequest.email() + " already exists");
 
         RoleEntity roleEntity = this.roleService.getRoleEntity(signRequest.role());
 
@@ -50,10 +52,10 @@ public class UserService {
 
     public LoginResponse login(LoginRequest loginRequest) {
         var user = this.userRepository.findByEmail(loginRequest.email())
-                .orElseThrow(() -> new BadCredentialsException("User or password is invalid"));
+                .orElseThrow(() -> new UserNotFoundException("User or password is invalid"));
 
         if (!bCryptPasswordEncoder.matches(loginRequest.password(), user.getPassword()))
-            throw new BadCredentialsException("User or password is invalid");
+            throw new UserBadCredentialsException("User or password is invalid");
 
         var now = Instant.now();
         var expiresIn = 300L;
@@ -62,7 +64,7 @@ public class UserService {
 
         var claims = JwtClaimsSet.builder()
                 .issuer("server")
-                .subject(user.getEmail())
+                .subject(user.getId().toString())
                 .expiresAt(now.plusSeconds(expiresIn))
                 .issuedAt(now)
                 .claim("scope", scope)
