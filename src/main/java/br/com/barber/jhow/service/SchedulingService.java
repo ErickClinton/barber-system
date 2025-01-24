@@ -1,11 +1,16 @@
 package br.com.barber.jhow.service;
 
 import br.com.barber.jhow.controller.dto.CreateScheduleRequest;
+import br.com.barber.jhow.controller.dto.SchedulingDto;
 import br.com.barber.jhow.entities.SchedulingEntity;
 import br.com.barber.jhow.entities.UserEntity;
 import br.com.barber.jhow.enums.TypeCutEnum;
 import br.com.barber.jhow.exceptions.scheduling.SchedulingHourConflictException;
 import br.com.barber.jhow.repositories.SchedulingRepository;
+import br.com.barber.jhow.repositories.dto.SchedulingView;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
@@ -18,19 +23,19 @@ public class SchedulingService {
     private final SchedulingRepository schedulingRepository;
     private final UserService userService;
 
-    public SchedulingService(SchedulingRepository schedulingRepository, UserService userService) {
+    public SchedulingService(SchedulingRepository schedulingRepository, @Lazy UserService userService) {
         this.schedulingRepository = schedulingRepository;
         this.userService = userService;
     }
 
     public SchedulingEntity createSchedule(CreateScheduleRequest createScheduleRequest, Jwt jwtToken) {
 
-        if (!this.verifyHour(createScheduleRequest.barbear(),createScheduleRequest.scheduled()) )
+        if (!this.verifyHour(createScheduleRequest.barbear(),createScheduleRequest.scheduled()))
                 throw new SchedulingHourConflictException("Hour regristred");
 
         var typeCut = TypeCutEnum.fromTypeCut(createScheduleRequest.typeOfCut());
         var endService = createScheduleRequest.scheduled().plusMinutes(typeCut.getTime());
-        var barbear = this.userService.getById(createScheduleRequest.barbear());
+        var barbear = this.userService.getUserById(createScheduleRequest.barbear());
         boolean isJwtTokenValid = jwtToken != null && jwtToken.getClaimAsString("sub") != null;
 
         var schedule = isJwtTokenValid
@@ -42,7 +47,7 @@ public class SchedulingService {
 
     private SchedulingEntity createScheduleWithRegister(CreateScheduleRequest createScheduleRequest, LocalDateTime endService, TypeCutEnum typeCut, Jwt jwtToken, UserEntity barbear) {
         var token = jwtToken.getClaimAsString("sub");
-        var user = this.userService.getById(UUID.fromString(token));
+        var user = this.userService.getUserById(UUID.fromString(token));
         return new SchedulingEntity(
                 createScheduleRequest.scheduled(),
                 endService,
@@ -74,8 +79,24 @@ public class SchedulingService {
                 .noneMatch(scheduling -> isTimeConflict(scheduling, scheduled));
     }
 
+
+    public Page<SchedulingDto> appointmentHistoryByUserID(UUID userId, Integer page, Integer pageSize) {
+        var pageRequest = PageRequest.of(page, pageSize);
+        return  this.schedulingRepository.findByUserId(userId,pageRequest)
+                .map(this::mapToDto);
+    }
+
     private boolean isTimeConflict(SchedulingEntity scheduling, LocalDateTime scheduled) {
         return !scheduled.isBefore(scheduling.getScheduled()) && !scheduled.isAfter(scheduling.getEndService());
+    }
+
+    private SchedulingDto mapToDto(SchedulingView schedulingView) {
+        return new SchedulingDto(
+                schedulingView.getScheduled(),
+                schedulingView.getEndService(),
+                schedulingView.getTypeOfCut(),
+                schedulingView.getBarber().getName()
+        );
     }
 
 }
