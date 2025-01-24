@@ -1,9 +1,6 @@
 package br.com.barber.jhow.controller;
 
-import br.com.barber.jhow.controller.dto.AllBarbersResponse;
-import br.com.barber.jhow.controller.dto.LoginRequest;
-import br.com.barber.jhow.controller.dto.LoginResponse;
-import br.com.barber.jhow.controller.dto.SignRequest;
+import br.com.barber.jhow.controller.dto.*;
 import br.com.barber.jhow.entities.UserEntity;
 import br.com.barber.jhow.service.UserService;
 import jakarta.validation.Valid;
@@ -15,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(path = "/user")
@@ -27,16 +25,14 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping
-    public ResponseEntity<?> teste(@AuthenticationPrincipal Jwt jwt) {
+    @GetMapping("/perfil")
+    public ResponseEntity<PerfilResponse> teste(@AuthenticationPrincipal Jwt jwt,
+                                                @RequestParam(name = "page", defaultValue = "0") Integer page,
+                                                @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
 
-
-        String email = jwt.getClaimAsString("sub");
-        String scope = jwt.getClaimAsString("role");
-        System.out.println("Usuário autenticado: " + email);
-        System.out.println("Escopo: " + scope);
-
-        return ResponseEntity.ok("Usuário autenticado: " + scope);
+        UUID id = UUID.fromString(jwt.getClaimAsString("sub"));
+        var dataPerfil = this.userService.getPerfilById(id, page, pageSize);
+        return ResponseEntity.ok(dataPerfil);
     }
 
     @PostMapping(path = "/login")
@@ -60,8 +56,8 @@ public class UserController {
 
     @GetMapping("/barbers")
     public ResponseEntity<List<AllBarbersResponse>> getAllBarbers() {
-        var users = this.userService.getAllBarbers();
-        return ResponseEntity.ok(users);
+        var barbers = this.userService.getAllBarbers();
+        return ResponseEntity.ok(barbers);
     }
 
 }
