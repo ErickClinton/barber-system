@@ -14,6 +14,21 @@ public class GlobalExceptionHandler {
         return e.toProblemDetail();
     }
 
+    @ExceptionHandler(RoleException.class)
+    public ProblemDetail handleRoleException(RoleException e) {
+        return e.toProblemDetail();
+    }
+
+    @ExceptionHandler(EnumException.class)
+    public ProblemDetail handleEnumException(EnumException e) {
+        return e.toProblemDetail();
+    }
+
+    @ExceptionHandler(SchedulingException.class)
+    public ProblemDetail handleSchedulingException(SchedulingException e) {
+        return e.toProblemDetail();
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail handleException(MethodArgumentNotValidException e) {
         var pd =  ProblemDetail.forStatus(400);

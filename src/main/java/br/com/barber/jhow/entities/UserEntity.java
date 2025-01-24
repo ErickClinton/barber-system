@@ -2,6 +2,7 @@ package br.com.barber.jhow.entities;
 
 import jakarta.persistence.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -25,6 +26,13 @@ public class UserEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     private RoleEntity role;
+
+    @OneToMany(mappedBy = "user")
+    private List<SchedulingEntity> userSchedulings;
+
+    @OneToMany(mappedBy = "barber")
+    private List<SchedulingEntity> barberSchedulings;
+
 
     public UserEntity() {
     }
@@ -74,5 +82,21 @@ public class UserEntity {
 
     public void setRole(RoleEntity role) {
         this.role = role;
+    }
+
+    public List<SchedulingEntity> getUserSchedulings() {
+        return userSchedulings;
+    }
+
+    public void setUserSchedulings(List<SchedulingEntity> userSchedulings) {
+        this.userSchedulings = userSchedulings;
+    }
+
+    public List<SchedulingEntity> getBarberSchedulings() {
+        return barberSchedulings;
+    }
+
+    public void setBarberSchedulings(List<SchedulingEntity> barberSchedulings) {
+        this.barberSchedulings = barberSchedulings;
     }
 }

@@ -1,10 +1,12 @@
 package br.com.barber.jhow.service;
 
+import br.com.barber.jhow.controller.dto.AllBarbersResponse;
 import br.com.barber.jhow.controller.dto.LoginRequest;
 import br.com.barber.jhow.controller.dto.LoginResponse;
 import br.com.barber.jhow.controller.dto.SignRequest;
 import br.com.barber.jhow.entities.RoleEntity;
 import br.com.barber.jhow.entities.UserEntity;
+import br.com.barber.jhow.enums.RoleEnum;
 import br.com.barber.jhow.exceptions.user.UserAlreadyExistsException;
 import br.com.barber.jhow.exceptions.user.UserBadCredentialsException;
 import br.com.barber.jhow.exceptions.user.UserNotFoundException;
@@ -16,7 +18,10 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -38,7 +43,7 @@ public class UserService {
             throw new UserAlreadyExistsException("User with email " + signRequest.email() + " already exists");
 
         RoleEntity roleEntity = this.roleService.getRoleEntity(signRequest.role());
-
+        System.out.println(roleEntity.getType());
 
         UserEntity user = new UserEntity(
                 signRequest.email(),
@@ -67,7 +72,7 @@ public class UserService {
                 .subject(user.getId().toString())
                 .expiresAt(now.plusSeconds(expiresIn))
                 .issuedAt(now)
-                .claim("scope", scope)
+                .claim("role", scope)
                 .build();
 
         var jwtValue = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
@@ -75,8 +80,21 @@ public class UserService {
         return new LoginResponse(jwtValue,expiresIn);
     }
 
+    public UserEntity getById(UUID id) {
+
+        return this.userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User with id " + id + " not found"));
+    }
+
     public List<UserEntity> getAllUsers() {
         return this.userRepository.findAll();
+    }
+
+    public List<AllBarbersResponse> getAllBarbers() {
+        return userRepository.findByRole_Type(RoleEnum.ADMIN)
+                .stream()
+                .map(barber -> new AllBarbersResponse(barber.getName()))
+                .collect(Collectors.toList());
     }
 
 }

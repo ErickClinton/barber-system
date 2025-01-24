@@ -1,5 +1,6 @@
 package br.com.barber.jhow.controller;
 
+import br.com.barber.jhow.controller.dto.AllBarbersResponse;
 import br.com.barber.jhow.controller.dto.LoginRequest;
 import br.com.barber.jhow.controller.dto.LoginResponse;
 import br.com.barber.jhow.controller.dto.SignRequest;
@@ -31,7 +32,7 @@ public class UserController {
 
 
         String email = jwt.getClaimAsString("sub");
-        String scope = jwt.getClaimAsString("scope");
+        String scope = jwt.getClaimAsString("role");
         System.out.println("Usuário autenticado: " + email);
         System.out.println("Escopo: " + scope);
 
@@ -51,10 +52,15 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_USER')")
     public ResponseEntity<List<UserEntity>> getAllUsers() {
         var users = this.userService.getAllUsers();
+        return ResponseEntity.ok(users);
+    }
 
+    @GetMapping("/barbers")
+    public ResponseEntity<List<AllBarbersResponse>> getAllBarbers() {
+        var users = this.userService.getAllBarbers();
         return ResponseEntity.ok(users);
     }
 

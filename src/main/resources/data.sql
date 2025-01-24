@@ -4,5 +4,5 @@ INSERT INTO role (type) VALUES ('ADMIN')
 INSERT INTO role (type) VALUES ('USER')
     ON CONFLICT (type) DO NOTHING;
 
-INSERT INTO role (type) VALUES ('MANAGER')
+INSERT INTO role (type) VALUES ('BARBER')
     ON CONFLICT (type) DO NOTHING;
