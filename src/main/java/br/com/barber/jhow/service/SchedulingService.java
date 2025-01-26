@@ -1,7 +1,6 @@
 package br.com.barber.jhow.service;
 
-import br.com.barber.jhow.controller.dto.CreateScheduleRequest;
-import br.com.barber.jhow.controller.dto.SchedulingDto;
+import br.com.barber.jhow.controller.dto.*;
 import br.com.barber.jhow.entities.SchedulingEntity;
 import br.com.barber.jhow.entities.UserEntity;
 import br.com.barber.jhow.enums.TypeCutEnum;
@@ -43,6 +42,14 @@ public class SchedulingService {
                 : this.createScheduleNoRegister(createScheduleRequest, endService, typeCut, barbear);
 
         return this.schedulingRepository.save(schedule);
+    }
+
+    public ScheduleAppointmentResponse scheduleByUserId(Jwt jwtToken, LocalDateTime period, Integer page, Integer pageSize) {
+        var id = jwtToken.getClaimAsString("sub");
+        var pageRequest = PageRequest.of(page, pageSize);
+        var schedules = this.schedulingRepository.findByBarberIdAndScheduledBetween(UUID.fromString(id),LocalDateTime.now(),period,pageRequest);
+
+        return new ScheduleAppointmentResponse(schedules.getContent(),new PaginationDto(page,pageSize,schedules.getTotalElements(),schedules.getTotalPages()));
     }
 
     private SchedulingEntity createScheduleWithRegister(CreateScheduleRequest createScheduleRequest, LocalDateTime endService, TypeCutEnum typeCut, Jwt jwtToken, UserEntity barbear) {
