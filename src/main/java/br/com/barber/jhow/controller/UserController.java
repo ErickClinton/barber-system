@@ -26,7 +26,7 @@ public class UserController {
     }
 
     @GetMapping("/perfil")
-    public ResponseEntity<PerfilResponse> teste(@AuthenticationPrincipal Jwt jwt,
+    public ResponseEntity<PerfilResponse> perfil(@AuthenticationPrincipal Jwt jwt,
                                                 @RequestParam(name = "page", defaultValue = "0") Integer page,
                                                 @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
 
