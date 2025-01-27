@@ -16,4 +16,5 @@ public interface SchedulingRepository extends JpaRepository<SchedulingEntity, In
     List<SchedulingEntity> findByBarberId(UUID id);
     Page<SchedulingView> findByUserId(UUID id, Pageable pageable);
     Page<SchedulingFutureView> findByBarberIdAndScheduledBetween(UUID userId, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
+    List<SchedulingEntity> findByScheduled(LocalDateTime startDate);
 }
