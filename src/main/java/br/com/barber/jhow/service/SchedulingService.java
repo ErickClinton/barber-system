@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -44,7 +45,7 @@ public class SchedulingService {
         return this.schedulingRepository.save(schedule);
     }
 
-    public ScheduleAppointmentResponse scheduleByUserId(Jwt jwtToken, LocalDateTime period, Integer page, Integer pageSize) {
+    public ScheduleAppointmentResponse scheduleByBarberId(Jwt jwtToken, LocalDateTime period, Integer page, Integer pageSize) {
         var id = jwtToken.getClaimAsString("sub");
         var pageRequest = PageRequest.of(page, pageSize);
         var schedules = this.schedulingRepository.findByBarberIdAndScheduledBetween(UUID.fromString(id),LocalDateTime.now(),period,pageRequest);
@@ -52,31 +53,8 @@ public class SchedulingService {
         return new ScheduleAppointmentResponse(schedules.getContent(),new PaginationDto(page,pageSize,schedules.getTotalElements(),schedules.getTotalPages()));
     }
 
-    private SchedulingEntity createScheduleWithRegister(CreateScheduleRequest createScheduleRequest, LocalDateTime endService, TypeCutEnum typeCut, Jwt jwtToken, UserEntity barbear) {
-        var token = jwtToken.getClaimAsString("sub");
-        var user = this.userService.getUserById(UUID.fromString(token));
-        return new SchedulingEntity(
-                createScheduleRequest.scheduled(),
-                endService,
-                typeCut,
-                user.getEmail(),
-                createScheduleRequest.phone(),
-                user.getName(),
-                user,
-                barbear
-        );
-    }
-
-    private SchedulingEntity createScheduleNoRegister(CreateScheduleRequest createScheduleRequest, LocalDateTime endService, TypeCutEnum typeCut, UserEntity barbear) {
-        return new SchedulingEntity(
-                createScheduleRequest.scheduled(),
-                endService,
-                typeCut,
-                createScheduleRequest.email(),
-                createScheduleRequest.phone(),
-                createScheduleRequest.name(),
-                barbear
-        );
+    public List<SchedulingEntity> getSchedulingByDate(LocalDateTime date) {
+        return this.schedulingRepository.findByScheduled(date);
     }
 
     public boolean verifyHour(UUID barberId, LocalDateTime scheduled) {
@@ -103,6 +81,33 @@ public class SchedulingService {
                 schedulingView.getEndService(),
                 schedulingView.getTypeOfCut(),
                 schedulingView.getBarber().getName()
+        );
+    }
+
+    private SchedulingEntity createScheduleWithRegister(CreateScheduleRequest createScheduleRequest, LocalDateTime endService, TypeCutEnum typeCut, Jwt jwtToken, UserEntity barbear) {
+        var token = jwtToken.getClaimAsString("sub");
+        var user = this.userService.getUserById(UUID.fromString(token));
+        return new SchedulingEntity(
+                createScheduleRequest.scheduled(),
+                endService,
+                typeCut,
+                user.getEmail(),
+                createScheduleRequest.phone(),
+                user.getName(),
+                user,
+                barbear
+        );
+    }
+
+    private SchedulingEntity createScheduleNoRegister(CreateScheduleRequest createScheduleRequest, LocalDateTime endService, TypeCutEnum typeCut, UserEntity barbear) {
+        return new SchedulingEntity(
+                createScheduleRequest.scheduled(),
+                endService,
+                typeCut,
+                createScheduleRequest.email(),
+                createScheduleRequest.phone(),
+                createScheduleRequest.name(),
+                barbear
         );
     }
 
