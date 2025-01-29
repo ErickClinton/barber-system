@@ -15,16 +15,16 @@ import java.time.LocalDateTime;
 
 
 @Component
-public class SchedullesCron {
+public class SchedulesCron {
 
     private final SchedulingService schedulingService;
     private final AwsSnsService awsSnsService;
     private final ObjectMapper objectMapper;
     private final Topic sendEmailTopic;
 
-    public SchedullesCron(SchedulingService schedulingService,
-                          AwsSnsService awsSnsService,
-                          ObjectMapper objectMapper, @Qualifier("emitEmailEventsTopic") Topic sendEmailTopic) {
+    public SchedulesCron(SchedulingService schedulingService,
+                         AwsSnsService awsSnsService,
+                         ObjectMapper objectMapper, @Qualifier("emitEmailEventsTopic") Topic sendEmailTopic) {
         this.schedulingService = schedulingService;
         this.awsSnsService = awsSnsService;
         this.objectMapper = objectMapper;

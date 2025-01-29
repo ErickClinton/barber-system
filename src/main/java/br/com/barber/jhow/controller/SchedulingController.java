@@ -14,11 +14,11 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping(path = "/scheduling")
-public class SchedullingController {
+public class SchedulingController {
 
     private final SchedulingService schedulingService;
 
-    public SchedullingController(SchedulingService schedulingService) {
+    public SchedulingController(SchedulingService schedulingService) {
         this.schedulingService = schedulingService;
     }
 
@@ -46,9 +46,15 @@ public class SchedullingController {
     public ResponseEntity<ScheduleAppointmentResponse> scheduleByBarberId(@AuthenticationPrincipal Jwt jwtToken, @PathVariable("date") String date,
                                                                         @RequestParam(name = "page", defaultValue = "0") Integer page,
                                                                         @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
-
-        var schedule = this.schedulingService.scheduleByBarberId(jwtToken, LocalDateTime.parse(date),page,pageSize);
+        var id = jwtToken.getClaimAsString("sub");
+        var schedule = this.schedulingService.scheduleByBarberId(UUID.fromString(id), LocalDateTime.parse(date),page,pageSize);
         return ResponseEntity.ok(schedule);
+    }
+
+    @DeleteMapping("delete/{id}")
+    public ResponseEntity<Void> deleteSchedule(@PathVariable("id") String id) {
+        this.schedulingService.deleteSchedule(Integer.valueOf(id));
+        return ResponseEntity.noContent().build();
     }
 
 }
